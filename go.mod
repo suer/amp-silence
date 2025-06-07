@@ -5,7 +5,7 @@ go 1.22.4
 require (
 	github.com/aws/aws-sdk-go-v2 v1.36.3
 	github.com/aws/aws-sdk-go-v2/config v1.29.14
-	github.com/aws/aws-sdk-go-v2/service/amp v1.33.1
+	github.com/aws/aws-sdk-go-v2/service/amp v1.34.1
 	github.com/jmespath/go-jmespath v0.4.0
 	github.com/spf13/cobra v1.9.1
 )
