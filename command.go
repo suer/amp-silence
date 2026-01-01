@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"runtime/debug"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/jmespath/go-jmespath"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -43,6 +45,7 @@ func rootCmd() *cobra.Command {
 		SilenceErrors: false,
 	}
 
+	cmd.AddCommand(createVersionCmd())
 	cmd.AddCommand(createAddCmd())
 	cmd.AddCommand(createDeleteCommand())
 	cmd.AddCommand(createListCmd())
@@ -72,6 +75,25 @@ func applyJMESPath(query string, data []byte, rawOutput bool) ([]byte, error) {
 	}
 
 	return json.Marshal(result)
+}
+
+func createVersionCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:           "version",
+		Short:         "",
+		Args:          cobra.MatchAll(cobra.NoArgs, cobra.OnlyValidArgs),
+		SilenceUsage:  true,
+		SilenceErrors: false,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if info, ok := debug.ReadBuildInfo(); ok {
+				fmt.Printf("Version: %s\n", info.Main.Version)
+				return nil
+			} else {
+				return errors.Errorf("could not read build info")
+			}
+		},
+	}
+	return cmd
 }
 
 func printResult(result []byte, query string, rawOutput bool) {
