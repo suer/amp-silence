@@ -7,7 +7,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.32.6
 	github.com/aws/aws-sdk-go-v2/service/amp v1.42.4
 	github.com/jmespath/go-jmespath v0.4.0
-	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.10.2
 )
 
