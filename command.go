@@ -2,13 +2,13 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"runtime/debug"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/jmespath/go-jmespath"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -89,7 +89,7 @@ func createVersionCmd() *cobra.Command {
 				fmt.Printf("Version: %s\n", info.Main.Version)
 				return nil
 			} else {
-				return errors.Errorf("could not read build info")
+				return errors.New("could not read build info")
 			}
 		},
 	}
