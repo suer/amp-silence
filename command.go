@@ -96,15 +96,16 @@ func createVersionCmd() *cobra.Command {
 	return cmd
 }
 
-func printResult(result []byte, query string, rawOutput bool) {
+func printResult(result []byte, query string, rawOutput bool) error {
 	if len(query) > 0 {
 		r, err := applyJMESPath(query, result, rawOutput)
 		if err != nil {
-			fmt.Println(err)
+			return err
 		}
 		result = r
 	}
 	fmt.Println(string(result))
+	return nil
 }
 
 func createAddCmd() *cobra.Command {
@@ -121,8 +122,7 @@ func createAddCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			printResult(result, opts.Query, opts.RawOutput)
-			return nil
+			return printResult(result, opts.Query, opts.RawOutput)
 		},
 	}
 
@@ -148,8 +148,7 @@ func createDeleteCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			printResult(result, opts.Query, opts.RawOutput)
-			return nil
+			return printResult(result, opts.Query, opts.RawOutput)
 		},
 	}
 	cmd.Flags().StringVarP(&opts.SilenceId, "silenceid", "s", "", "silence id (ex: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx)")
@@ -175,8 +174,7 @@ func createListCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			printResult(result, opts.Query, opts.RawOutput)
-			return nil
+			return printResult(result, opts.Query, opts.RawOutput)
 		},
 	}
 
@@ -202,8 +200,7 @@ func createListWorkspcesCmd() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			printResult(result, opts.Query, opts.RawOutput)
-			return nil
+			return printResult(result, opts.Query, opts.RawOutput)
 		},
 	}
 
