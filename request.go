@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	neturl "net/url"
 	"strings"
 	"time"
 
@@ -14,7 +15,27 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 )
 
+func validateEndpoint(rawURL string) error {
+	u, err := neturl.Parse(rawURL)
+	if err != nil {
+		return err
+	}
+	if u.Scheme != "https" {
+		return fmt.Errorf("endpoint must use https: %s", rawURL)
+	}
+	host := u.Hostname()
+	isAmazonHost := strings.HasSuffix(host, ".amazonaws.com") || strings.HasSuffix(host, ".amazonaws.com.cn")
+	if !strings.HasPrefix(host, "aps-workspaces.") || !isAmazonHost {
+		return fmt.Errorf("endpoint host must be aps-workspaces.<region>.amazonaws.com: %s", host)
+	}
+	return nil
+}
+
 func RequestWithSigv4(httpMethod string, url string, body []byte) ([]byte, error) {
+	if err := validateEndpoint(url); err != nil {
+		return nil, err
+	}
+
 	reqBody := strings.NewReader(string(body))
 	hash := sha256.Sum256(body)
 	hashString := hex.EncodeToString(hash[:])
@@ -38,7 +59,11 @@ func RequestWithSigv4(httpMethod string, url string, body []byte) ([]byte, error
 
 	signer := v4.NewSigner()
 	signer.SignHTTP(ctx, credentials, req, hashString, "aps", cfg.Region, time.Now().UTC())
-	httpClient := new(http.Client)
+	httpClient := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
 	response, err := httpClient.Do(req)
 	if err != nil {
 		return nil, err
