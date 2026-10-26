@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"testing"
+	"time"
+)
 
 func TestValidateEndpoint(t *testing.T) {
 	tests := []struct {
@@ -19,6 +22,29 @@ func TestValidateEndpoint(t *testing.T) {
 		err := validateEndpoint(tt.url)
 		if (err != nil) != tt.wantErr {
 			t.Errorf("validateEndpoint(%q) error = %v, wantErr %v", tt.url, err, tt.wantErr)
+		}
+	}
+}
+
+func TestRequestTimeout(t *testing.T) {
+	tests := []struct {
+		env     string
+		want    time.Duration
+		wantErr bool
+	}{
+		{"", 30 * time.Second, false},
+		{"5s", 5 * time.Second, false},
+		{"2m", 2 * time.Minute, false},
+		{"abc", 0, true},
+		{"10", 0, true},
+		{"0s", 0, true},
+		{"-5s", 0, true},
+	}
+	for _, tt := range tests {
+		t.Setenv(timeoutEnvName, tt.env)
+		got, err := requestTimeout()
+		if (err != nil) != tt.wantErr || got != tt.want {
+			t.Errorf("requestTimeout() with %q = %v, %v; want %v, wantErr %v", tt.env, got, err, tt.want, tt.wantErr)
 		}
 	}
 }

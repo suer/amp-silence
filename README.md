@@ -68,6 +68,14 @@ $ ./amp-silence list -e https://aps-workspaces.ap-northeast-1.amazonaws.com/work
 yyyyyyyy-yyyy-yyyy-yyyy-yyyyyyyyyyyy
 ```
 
+### Request timeout
+
+The HTTP request timeout is 30 seconds by default. Set `AMP_SILENCE_TIMEOUT` (Go duration format) to change it.
+
+```bash
+$ AMP_SILENCE_TIMEOUT=10s ./amp-silence list -e https://aps-workspaces.ap-northeast-1.amazonaws.com/workspaces/ws-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/
+```
+
 ## Build
 
 ```bash

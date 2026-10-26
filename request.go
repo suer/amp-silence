@@ -8,12 +8,33 @@ import (
 	"io"
 	"net/http"
 	neturl "net/url"
+	"os"
 	"strings"
 	"time"
 
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
 	"github.com/aws/aws-sdk-go-v2/config"
 )
+
+const (
+	defaultRequestTimeout = 30 * time.Second
+	timeoutEnvName        = "AMP_SILENCE_TIMEOUT"
+)
+
+func requestTimeout() (time.Duration, error) {
+	v := os.Getenv(timeoutEnvName)
+	if v == "" {
+		return defaultRequestTimeout, nil
+	}
+	d, err := time.ParseDuration(v)
+	if err != nil {
+		return 0, fmt.Errorf("invalid %s: %w", timeoutEnvName, err)
+	}
+	if d <= 0 {
+		return 0, fmt.Errorf("invalid %s: must be positive: %s", timeoutEnvName, v)
+	}
+	return d, nil
+}
 
 func validateEndpoint(rawURL string) error {
 	u, err := neturl.Parse(rawURL)
@@ -33,6 +54,11 @@ func validateEndpoint(rawURL string) error {
 
 func RequestWithSigv4(httpMethod string, url string, body []byte) ([]byte, error) {
 	if err := validateEndpoint(url); err != nil {
+		return nil, err
+	}
+
+	timeout, err := requestTimeout()
+	if err != nil {
 		return nil, err
 	}
 
@@ -60,6 +86,7 @@ func RequestWithSigv4(httpMethod string, url string, body []byte) ([]byte, error
 	signer := v4.NewSigner()
 	signer.SignHTTP(ctx, credentials, req, hashString, "aps", cfg.Region, time.Now().UTC())
 	httpClient := &http.Client{
+		Timeout: timeout,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
