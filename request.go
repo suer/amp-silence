@@ -15,6 +15,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 )
 
+const requestTimeout = 30 * time.Second
+
 func validateEndpoint(rawURL string) error {
 	u, err := neturl.Parse(rawURL)
 	if err != nil {
@@ -60,6 +62,7 @@ func RequestWithSigv4(httpMethod string, url string, body []byte) ([]byte, error
 	signer := v4.NewSigner()
 	signer.SignHTTP(ctx, credentials, req, hashString, "aps", cfg.Region, time.Now().UTC())
 	httpClient := &http.Client{
+		Timeout: requestTimeout,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
